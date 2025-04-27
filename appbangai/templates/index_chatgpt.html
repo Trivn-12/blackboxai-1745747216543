@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao diện ChatGPT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            background-color: #e9ecef;
+            align-self: flex-start;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .input-container button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            ChatGPT
+        </div>
+        <div class="chat-box" id="chatBox">
+            <!-- Tin nhắn sẽ được hiển thị ở đây -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Nhập tin nhắn của bạn...">
+            <button id="sendBtn">Gửi</button>
+        </div>
+    </div>
+
+    <script>
+        const sendBtn = document.getElementById('sendBtn');
+        const userInput = document.getElementById('userInput');
+        const chatBox = document.getElementById('chatBox');
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            try {
+                const response = await fetch('/gemini-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                if (data.response) {
+                    const responseText = typeof data.response === 'string' ? data.response : JSON.stringify(data.response);
+                    addMessage(responseText, 'bot');
+                } else if (data.error) {
+                    addMessage('Lỗi: ' + data.error, 'bot');
+                }
+            } catch (err) {
+                addMessage('Lỗi khi kết nối đến server: ' + err.message, 'bot');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            messageElement.textContent = text;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
