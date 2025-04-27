@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>App Bạn Gái</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #pet {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 80px;
+            height: 80px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/1998/1998613.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 1000;
+            transition: left 0.5s linear;
+            cursor: pointer;
+        }
+        #pet-bubble {
+            position: fixed;
+            bottom: 110px;
+            left: 0;
+            max-width: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-size: 14px;
+            color: #333;
+            display: none;
+            z-index: 1001;
+            pointer-events: none;
+            user-select: none;
+        }
+        #chat-history {
+            position: fixed;
+            bottom: 160px;
+            right: 20px;
+            max-width: 280px;
+            max-height: 360px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            color: #333;
+            display: none;
+            z-index: 1002;
+        }
+        #chat-messages > div {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #c7d2fe;
+            text-align: left;
+        }
+        .girl-message {
+            background-color: #bbf7d0;
+            text-align: left;
+        }
+        #clear-chat {
+            width: 100%;
+            background-color: #ef4444;
+            color: white;
+            padding: 6px 0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        #message-suggestions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 280px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            color: #333;
+            z-index: 1003;
+        }
+        #suggestions-container button {
+            background-color: #c7d2fe;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        #suggestions-container button:hover {
+            background-color: #a5b4fc;
+        }
+        #personality-section {
+            max-width: 280px;
+            margin: 20px auto 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            color: #333;
+        }
+        #personality-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        #personality-section input[type=range] {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 min-h-screen flex flex-col items-center justify-start py-12 px-4">
+    <header class="w-full max-w-4xl mb-12 p-6 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 shadow-lg text-white text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight">App Bạn Gái</h1>
+        <p class="mt-2 text-lg font-light">Trò chuyện với cô gái thân thiện</p>
+    </header>
+    <main class="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">Trò chuyện</h2>
+        </div>
+
+        <div id="pet"></div>
+        <div id="pet-bubble"></div>
+
+        <div id="chat-history">
+            <h3 class="font-semibold mb-2 text-center">Lịch sử trò chuyện với cô gái</h3>
+            <div id="chat-messages"></div>
+            <button id="clear-chat">Xóa lịch sử</button>
+        </div>
+
+        <div id="message-suggestions">
+            <h3 class="font-semibold mb-2 text-center">Gợi ý tin nhắn</h3>
+            <div id="suggestions-container">
+                <button>Xin chào!</button>
+                <button>Bạn có khỏe không?</button>
+                <button>Hôm nay bạn làm gì?</button>
+                <button>Bạn thích nghe nhạc gì?</button>
+                <button>Bạn có thích thú cưng không?</button>
+            </div>
+        </div>
+
+        <section id="personality-section">
+            <h2 class="text-2xl font-bold mb-4 text-center">Chọn cá tính của cô gái</h2>
+            <form id="personality-form" class="space-y-4">
+                <div>
+                    <label for="cheerful">Vui vẻ</label>
+                    <input type="range" id="cheerful" name="cheerful" min="1" max="5" value="3" />
+                </div>
+                <div>
+                    <label for="flirtatious">Điệu đà</label>
+                    <input type="range" id="flirtatious" name="flirtatious" min="1" max="5" value="3" />
+                </div>
+                <div>
+                    <label for="irritable">Cáu kỉnh</label>
+                    <input type="range" id="irritable" name="irritable" min="1" max="5" value="3" />
+                </div>
+                <div>
+                    <label for="kind">Hiền lành</label>
+                    <input type="range" id="kind" name="kind" min="1" max="5" value="3" />
+                </div>
+                <div>
+                    <label for="shy">Nhút nhát</label>
+                    <input type="range" id="shy" name="shy" min="1" max="5" value="3" />
+                </div>
+            </form>
+        </section>
+
+        <script>
+            const pet = document.getElementById('pet');
+            const petBubble = document.getElementById('pet-bubble');
+            const chatHistory = document.getElementById('chat-history');
+            const chatMessages = document.getElementById('chat-messages');
+            const clearChatBtn = document.getElementById('clear-chat');
+            const suggestionsContainer = document.getElementById('suggestions-container');
+            const personalityForm = document.getElementById('personality-form');
+
+            let position = 0;
+            let direction = 1; // 1 for right, -1 for left
+            let speed = 5; // pixels per move
+            const screenWidth = window.innerWidth;
+
+            let verticalPosition = 0;
+            let verticalDirection = 1; // 1 for down, -1 for up
+            let verticalSpeed = 2; // pixels per move
+            let pauseTime = 0;
+            let isPaused = false;
+
+            function movePet() {
+                if (isPaused) {
+                    pauseTime--;
+                    if (pauseTime <= 0) {
+                        isPaused = false;
+                        // Randomize speed and direction after pause
+                        speed = Math.floor(Math.random() * 5) + 2;
+                        verticalSpeed = Math.floor(Math.random() * 3) + 1;
+                        direction = Math.random() > 0.5 ? 1 : -1;
+                        verticalDirection = Math.random() > 0.5 ? 1 : -1;
+                    }
+                    return;
+                }
+
+                position += direction * speed;
+                verticalPosition += verticalDirection * verticalSpeed;
+
+                if (position < 0) {
+                    position = 0;
+                    direction = 1;
+                    isPaused = true;
+                    pauseTime = Math.floor(Math.random() * 20) + 10; // pause 10-30 cycles
+                } else if (position > screenWidth - pet.offsetWidth) {
+                    position = screenWidth - pet.offsetWidth;
+                    direction = -1;
+                    isPaused = true;
+                    pauseTime = Math.floor(Math.random() * 20) + 10;
+                }
+
+                const maxVertical = window.innerHeight - pet.offsetHeight - 100; // keep above bottom UI
+                if (verticalPosition < 0) {
+                    verticalPosition = 0;
+                    verticalDirection = 1;
+                } else if (verticalPosition > maxVertical) {
+                    verticalPosition = maxVertical;
+                    verticalDirection = -1;
+                }
+
+                pet.style.left = position + 'px';
+                pet.style.bottom = (20 + verticalPosition) + 'px';
+                petBubble.style.left = (position + 90) + 'px';
+                petBubble.style.bottom = (110 + verticalPosition) + 'px';
+            }
+
+            // Move pet every 100ms
+            setInterval(movePet, 100);
+
+            // Function to add chat message to history
+            function addChatMessage(sender, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('p-2', 'rounded', sender === 'user' ? 'user-message' : 'girl-message', 'break-words');
+                messageDiv.textContent = (sender === 'user' ? 'Bạn: ' : 'Cô gái: ') + message;
+                chatMessages.appendChild(messageDiv);
+                chatHistory.style.display = 'block';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Load chat history on page load
+            async function loadChatHistory() {
+                try {
+                    const response = await fetch('/chat-history');
+                    const data = await response.json();
+                    if (data.history && Array.isArray(data.history)) {
+                        chatMessages.innerHTML = '';
+                        data.history.forEach(msg => {
+                            addChatMessage(msg.sender, msg.message);
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error loading chat history:', err);
+                }
+            }
+            window.addEventListener('DOMContentLoaded', loadChatHistory);
+
+            // Clear chat history button
+            clearChatBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/clear-chat', { method: 'POST' });
+                    if (response.ok) {
+                        chatMessages.innerHTML = '';
+                        chatHistory.style.display = 'none';
+                    } else {
+                        alert('Không thể xóa lịch sử trò chuyện.');
+                    }
+                } catch (err) {
+                    alert('Lỗi khi xóa lịch sử trò chuyện: ' + err.message);
+                }
+            });
+
+            // Pet interaction
+            pet.addEventListener('click', async () => {
+                const userMessage = prompt('Nói gì đó với cô gái:');
+                if (!userMessage) return;
+                addChatMessage('user', userMessage);
+
+                // Get personality values
+                const cheerful = personalityForm.cheerful.value;
+                const flirtatious = personalityForm.flirtatious.value;
+                const irritable = personalityForm.irritable.value;
+                const kind = personalityForm.kind.value;
+                const shy = personalityForm.shy.value;
+
+                // Construct personality description
+                const personalityDescription = `Cá tính của cô gái: vui vẻ mức độ ${cheerful}, điệu đà mức độ ${flirtatious}, cáu kỉnh mức độ ${irritable}, hiền lành mức độ ${kind}, nhút nhát mức độ ${shy}.`;
+
+                try {
+                    const response = await fetch('/pet-interact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: userMessage, personality: personalityDescription })
+                    });
+                    const data = await response.json();
+                    if (data.response) {
+                        let responseText = typeof data.response === 'string' ? data.response : JSON.stringify(data.response);
+                        let cleanResponse = responseText.replace(/<\/?[^>]+(>|$)/g, "").trim();
+                        petBubble.textContent = cleanResponse;
+                        petBubble.style.display = 'block';
+                        setTimeout(() => {
+                            petBubble.style.display = 'none';
+                        }, 15000);
+                        addChatMessage('girl', cleanResponse);
+                    } else if (data.error) {
+                        alert('Lỗi: ' + data.error);
+                    }
+                } catch (err) {
+                    alert('Lỗi khi tương tác với cô gái: ' + err.message);
+                }
+            });
+
+            // Message suggestion click handling
+            suggestionsContainer.addEventListener('click', async (e) => {
+                if (e.target && e.target.tagName === 'BUTTON') {
+                    const message = e.target.textContent;
+                    addChatMessage('user', message);
+                    // Get personality values
+                    const cheerful = personalityForm.cheerful.value;
+                    const flirtatious = personalityForm.flirtatious.value;
+                    const irritable = personalityForm.irritable.value;
+                    const kind = personalityForm.kind.value;
+                    const shy = personalityForm.shy.value;
+                    const personalityDescription = `Cá tính của cô gái: vui vẻ mức độ ${cheerful}, điệu đà mức độ ${flirtatious}, cáu kỉnh mức độ ${irritable}, hiền lành mức độ ${kind}, nhút nhát mức độ ${shy}.`;
+                    try {
+                        const response = await fetch('/pet-interact', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message, personality: personalityDescription })
+                        });
+                        const data = await response.json();
+                        if (data.response) {
+                            let responseText = typeof data.response === 'string' ? data.response : JSON.stringify(data.response);
+                            let cleanResponse = responseText.replace(/<\/?[^>]+(>|$)/g, "").trim();
+                            petBubble.textContent = cleanResponse;
+                            petBubble.style.display = 'block';
+                            setTimeout(() => {
+                                petBubble.style.display = 'none';
+                            }, 15000);
+                            addChatMessage('girl', cleanResponse);
+                        } else if (data.error) {
+                            alert('Lỗi: ' + data.error);
+                        }
+                    } catch (err) {
+                        alert('Lỗi khi tương tác với cô gái: ' + err.message);
+                    }
+                }
+            });
+        </script>
+</body>
+</html>
